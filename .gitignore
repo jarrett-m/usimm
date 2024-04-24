@@ -1,3 +1,7 @@
 input/nondomains
 bin/
 output/
+.vscode/
+input/nondomains
+input/domains/fluid
+input/domains/face

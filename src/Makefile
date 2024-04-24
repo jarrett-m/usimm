@@ -21,8 +21,17 @@ $(OBJDIR)/memory_controller.o: memory_controller.c utlist.h utils.h params.h mem
 	$(CC) $(CFLAGS) memory_controller.c -o $(OBJDIR)/memory_controller.o
 	chmod 777 $(OBJDIR)/memory_controller.o
 
-$(OBJDIR)/scheduler.o: scheduler.c scheduler.h utlist.h utils.h memory_controller.h params.h
-	$(CC) $(CFLAGS) scheduler.c -o $(OBJDIR)/scheduler.o
+# $(OBJDIR)/scheduler.o: scheduler.c scheduler.h utlist.h utils.h memory_controller.h params.h
+# 	# $(CC) $(CFLAGS) scheduler.c -o $(OBJDIR)/scheduler.o
+# 	# chmod 777 $(OBJDIR)/scheduler.o
+
+# $(OBJDIR)/scheduler.o: scheduler-close.c scheduler-close.h utlist.h utils.h memory_controller.h params.h
+# 	$(CC) $(CFLAGS) scheduler-close.c -o $(OBJDIR)/scheduler.o
+# 	chmod 777 $(OBJDIR)/scheduler.o
+
+
+$(OBJDIR)/scheduler.o: scheduler-fsbta.c scheduler-fsbta.h utlist.h utils.h memory_controller.h params.h
+	$(CC) $(CFLAGS) scheduler-fsbta.c -o $(OBJDIR)/scheduler.o
 	chmod 777 $(OBJDIR)/scheduler.o
 
 clean:

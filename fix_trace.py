@@ -1,6 +1,6 @@
 from random import randint
-with open("input/nondomains/fluid") as f:
+with open("input/nondomains/mcf") as f:
     #append a rand int from 0-7 to the end of each line with space berfire it
-    lines = [line.strip() + " " + str(randint(0, 7)) + "\n" for line in f.readlines()]
-with open("input/domains/fluid", "w") as f:
+    lines = [line.strip() + " " + str(1) + "\n" for line in f.readlines()]
+with open("input/domains/mcf-2", "w") as f:
     f.writelines(lines)
