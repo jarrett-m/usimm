@@ -1,5 +1,6 @@
 input/nondomains
-bin/
+bin/*
+obj/*
 output/
 .vscode/
 input/nondomains

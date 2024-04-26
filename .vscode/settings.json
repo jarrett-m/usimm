@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "random": "c",
-        "stdio.h": "c",
-        "memory_controller.h": "c"
-    }
-}
