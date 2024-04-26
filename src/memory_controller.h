@@ -5,7 +5,7 @@
 #define MAX_NUM_RANKS 16
 #define MAX_NUM_BANKS 32
 #define DOMAIN_COUNT 2
-#define DEADTIME 15
+int DEADTIME;
 int SECURED;
 
 // Moved here from main.c
@@ -98,6 +98,8 @@ typedef struct fs_data {
   int domain_zero_starter;
   int domain_did_read_or_write;
   int command_issued;
+  optype_t allowed_op;
+  dram_address_t to_close;
 } fs_data_t;
 
 fs_data_t channel_fs_data[MAX_NUM_CHANNELS];

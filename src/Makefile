@@ -48,7 +48,15 @@ fsbta: $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o
 	$(CC) $(LFLAGS) $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o $(OBJDIR)/scheduler-fsbta.o -o $(BINDIR)/$(OUT)
 	chmod 777 $(BINDIR)/$(OUT)
 
-all: close fsbta $(BINDIR)/$(OUT)
+fsbta-rwopt: OUT = usimm-fsbta-rwopt
+fsbta-rwopt: $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o
+	$(CC) $(CFLAGS) scheduler-fsbta-rwopt.c -o $(OBJDIR)/scheduler-fsbta-rwopt.o
+	chmod 777 $(OBJDIR)/scheduler-fsbta-rwopt.o
+	@echo "Building $(BINDIR)/$(OUT)"
+	$(CC) $(LFLAGS) $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o $(OBJDIR)/scheduler-fsbta-rwopt.o -o $(BINDIR)/$(OUT)
+	chmod 777 $(BINDIR)/$(OUT)
+
+all: close fsbta fsbta-rwopt $(BINDIR)/$(OUT)
 
 
 clean:

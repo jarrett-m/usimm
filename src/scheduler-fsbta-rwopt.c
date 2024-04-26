@@ -6,9 +6,9 @@
 #include "memory_controller.h"
 #include "params.h"
 
-/* Copied from scheduler-close.c
-    Will be modified to work as Fixed Service: Bank Triple Alteration (FSBTA)
-   scheduler.
+/* 
+    FS-BTA: Fixed Service Bank Triple Alteration
+    WITH Read Write Optimization!!!!
 */
 
 extern long long int CYCLE_VAL;
@@ -36,34 +36,39 @@ void init_scheduler_vars() {
     channel_fs_data[i].bank_turn = 0;
     channel_fs_data[i].domain_zero_starter = 0;
     channel_fs_data[i].domain_did_read_or_write = 0;
+    channel_fs_data[i].allowed_op = READ;
   }
 
-  //set security policy and deadtime
+  //set security policy
   SECURED = 1;
-  DEADTIME = 15;
+  DEADTIME = 12;
 
   return;
 }
 
 void schedule(int channel) {
   request_t *rq_ptr = NULL;
-
+  
+  //grab data
   long long last_req_issue_cycle = channel_fs_data[channel].last_req_issue_cycle;
   int domain_turn = channel_fs_data[channel].domain_turn;
   int bank_turn = channel_fs_data[channel].bank_turn;
   int domain_zero_starter = channel_fs_data[channel].domain_zero_starter;
+  optype_t allowed_op = channel_fs_data[channel].allowed_op;
+  dram_address_t to_close = channel_fs_data[channel].to_close;
 
+  //if its the start of a new turn, it just flipped from READ to WRITE or vice versa so wee need a larger gap!
+  int deadtime = (domain_turn == 0) ? 15 : DEADTIME;
   //if it is the deadtime cycle, send a ready act to bank_turn
-  if (CYCLE_VAL - last_req_issue_cycle >= DEADTIME || CYCLE_VAL == 0){
-    //if bank refreshing 
+  if (CYCLE_VAL - last_req_issue_cycle >= deadtime || CYCLE_VAL == 0){
     int needs_fake = 1;
     LL_FOREACH(domain_queues[channel][domain_turn], rq_ptr){
-      //if issuable, is an act, matches bank, and is deadtime
+      //if issuable, is an act, matches bank, and is deadtime and is the allowed operation
       //must send an act to bank_turn
-      if (rq_ptr->command_issuable && (rq_ptr->next_command == ACT_CMD) && rq_ptr->dram_addr.bank % 3 == bank_turn){
-        issue_request_command(rq_ptr);
-        needs_fake = 0;
-        break;
+      if (rq_ptr->command_issuable && rq_ptr->next_command == ACT_CMD && rq_ptr->operation_type == allowed_op && rq_ptr->dram_addr.bank % 3 == bank_turn){
+          issue_request_command(rq_ptr);
+          needs_fake = 0;
+          break;
       }
     }
     if (needs_fake == 1){
@@ -73,6 +78,7 @@ void schedule(int channel) {
     if (domain_turn == DOMAIN_COUNT - 1) {
         bank_turn = (domain_zero_starter + 2) % 3;
         domain_zero_starter = (domain_zero_starter + 2) % 3;
+        allowed_op = (allowed_op == READ) ? WRITE : READ;
     } else {
         bank_turn = (bank_turn + 1) % 3;
     }
@@ -93,6 +99,8 @@ void schedule(int channel) {
     }
   }
 
+    /* If a command hasn't yet been issued to this channel in this cycle, issue a
+   * precharge. */
   if (!command_issued_current_cycle[channel]) {
     for (int i = 0; i < NUM_RANKS; i++) {
       for (int j = 0; j < NUM_BANKS; j++) { /* For all banks on the channel.. */
@@ -106,11 +114,14 @@ void schedule(int channel) {
       }
     }
   }
+
   //update the scheduler variables
   channel_fs_data[channel].last_req_issue_cycle = last_req_issue_cycle;
   channel_fs_data[channel].domain_turn = domain_turn;
   channel_fs_data[channel].bank_turn = bank_turn;
   channel_fs_data[channel].domain_zero_starter = domain_zero_starter;
+  channel_fs_data[channel].allowed_op = allowed_op;
+  channel_fs_data[channel].to_close = to_close;
 }
 
 void scheduler_stats() {

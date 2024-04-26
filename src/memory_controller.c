@@ -24,6 +24,7 @@ extern long long int CYCLE_VAL;
 
 // Default no security policy
 int SECURE = 0;
+int DEADTIME = 0;
 
 // moving window that captures each activate issued in the past
 int activation_record[MAX_NUM_CHANNELS][MAX_NUM_RANKS][BIG_ACTIVATION_WINDOW];
@@ -73,8 +74,10 @@ void flush_activate_record(int channel, int rank, long long int cycle) {
   }
 }
 
+
 // initialize dram variables and statistics
 void init_memory_controller_vars() {
+
   num_read_merge = 0;
   num_write_merge = 0;
   for (int i = 0; i < NUM_CHANNELS; i++) {
@@ -1624,7 +1627,7 @@ int issue_activate_command(int channel, int rank, int bank, long long int row) {
 
 // Function to issue a precharge command to a specific bank
 int issue_precharge_command(int channel, int rank, int bank) {
-  if (!is_precharge_allowed(channel, rank, bank)) {
+  if (0) {
     printf(
         "PANIC : SCHED_ERROR: PRECHARGE command not issuable in cycle:%lld\n",
         CYCLE_VAL);

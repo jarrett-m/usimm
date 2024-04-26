@@ -597,5 +597,11 @@ int main(int argc, char *argv[]) {
                (float)((double)CYCLE_VAL / (double)3200000000));
   }
 
+    printf("Cycles %lld\n", CYCLE_VAL);
+      printf("Cycles %lld\n", CYCLE_VAL);
+        printf("Cycles %lld\n", CYCLE_VAL);
+          printf("Cycles %lld\n", CYCLE_VAL);
+
+
   return 0;
 }
