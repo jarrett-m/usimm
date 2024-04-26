@@ -27,7 +27,6 @@ void init_scheduler_vars() {
       }
     }
   }
-
   return;
 }
 

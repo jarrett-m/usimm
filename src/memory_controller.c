@@ -22,6 +22,9 @@ extern long long int CYCLE_VAL;
 
 #define BIG_ACTIVATION_WINDOW 1000000
 
+// Default no security policy
+int SECURE = 0;
+
 // moving window that captures each activate issued in the past
 int activation_record[MAX_NUM_CHANNELS][MAX_NUM_RANKS][BIG_ACTIVATION_WINDOW];
 

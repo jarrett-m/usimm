@@ -38,6 +38,9 @@ void init_scheduler_vars() {
     channel_fs_data[i].domain_did_read_or_write = 0;
   }
 
+  //set security policy
+  SECURED = 1;
+
   return;
 }
 
@@ -51,35 +54,25 @@ void schedule(int channel) {
 
   //if it is the deadtime cycle, send a ready act to bank_turn
   if (CYCLE_VAL - last_req_issue_cycle >= DEADTIME || CYCLE_VAL == 0){
-    int any_req = 0;
+    int needs_fake = 1;
     LL_FOREACH(domain_queues[channel][domain_turn], rq_ptr){
       //if issuable, is an act, matches bank, and is deadtime
       //must send an act to bank_turn
       if (rq_ptr->command_issuable && (rq_ptr->next_command == ACT_CMD) && rq_ptr->dram_addr.bank % 3 == bank_turn){
         issue_request_command(rq_ptr);
-        any_req = 1;
+        needs_fake = 0;
         break;
       }
     }
-    if (any_req == 0){
+    if (needs_fake == 1){
       //send fake req to bank_turn
     }
     last_req_issue_cycle = CYCLE_VAL;
-    if (domain_turn == DOMAIN_COUNT - 1){
-      if (domain_zero_starter == 0){
-        bank_turn = 2;
-        domain_zero_starter = 2;
-      }
-      else if (domain_zero_starter == 1){
-        bank_turn = 0;
-        domain_zero_starter = 0;
-      }
-      else if (domain_zero_starter == 2){
-        bank_turn = 1;
-        domain_zero_starter = 1;
-      }
+    if (domain_turn == DOMAIN_COUNT - 1) {
+        bank_turn = (domain_zero_starter + 2) % 3;
+        domain_zero_starter = (domain_zero_starter + 2) % 3;
     } else {
-      bank_turn = (bank_turn + 1) % 3;
+        bank_turn = (bank_turn + 1) % 3;
     }
     domain_turn = (domain_turn + 1) % DOMAIN_COUNT;
 
@@ -100,8 +93,6 @@ void schedule(int channel) {
   channel_fs_data[channel].domain_turn = domain_turn;
   channel_fs_data[channel].bank_turn = bank_turn;
   channel_fs_data[channel].domain_zero_starter = domain_zero_starter;
-
-
 }
 
 void scheduler_stats() {

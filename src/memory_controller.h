@@ -4,9 +4,9 @@
 #define MAX_NUM_CHANNELS 16
 #define MAX_NUM_RANKS 16
 #define MAX_NUM_BANKS 32
-#define DOMAIN_COUNT 8
+#define DOMAIN_COUNT 2
 #define DEADTIME 15
-#define SECURED 1
+int SECURED;
 
 // Moved here from main.c
 long long int *committed; // total committed instructions in each core
