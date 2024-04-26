@@ -9,6 +9,9 @@ LFLAGS = -Wall $(DEBUG)
 # Default output name
 OUT = usimm
 
+# If bin or obj directories do not exist, create them
+$(shell mkdir -p $(BINDIR) $(OBJDIR))
+
 # Rule to build the final binary
 $(BINDIR)/$(OUT): $(OBJS)
 	$(CC) $(LFLAGS) $(OBJS) -o $(BINDIR)/$(OUT)
@@ -27,7 +30,6 @@ $(OBJDIR)/memory_controller.o: memory_controller.c utlist.h utils.h params.h mem
 $(OBJDIR)/scheduler.o: scheduler.c scheduler.h utlist.h utils.h memory_controller.h params.h
 	$(CC) $(CFLAGS) scheduler.c -o $(OBJDIR)/scheduler.o
 	chmod 777 $(OBJDIR)/scheduler.o
-
 
 close: OUT = usimm-close
 close: $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o
