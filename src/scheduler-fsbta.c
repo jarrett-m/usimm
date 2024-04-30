@@ -96,8 +96,7 @@ void schedule(int channel) {
   if (!command_issued_current_cycle[channel]) {
     for (int i = 0; i < NUM_RANKS; i++) {
       for (int j = 0; j < NUM_BANKS; j++) { /* For all banks on the channel.. */
-        if (recent_colacc[channel][i]
-                         [j]) { /* See if this bank is a candidate. */
+        if (recent_colacc[channel][i][j]) { /* See if this bank is a candidate. */
             if (issue_precharge_command(channel, i, j)) {
               num_aggr_precharge++;
               recent_colacc[channel][i][j] = 0;

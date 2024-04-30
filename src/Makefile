@@ -48,15 +48,23 @@ fsbta: $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o
 	$(CC) $(LFLAGS) $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o $(OBJDIR)/scheduler-fsbta.o -o $(BINDIR)/$(OUT)
 	chmod 777 $(BINDIR)/$(OUT)
 
-fsbta-rwopt: OUT = usimm-fsbta-rwopt
-fsbta-rwopt: $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o
-	$(CC) $(CFLAGS) scheduler-fsbta-rwopt.c -o $(OBJDIR)/scheduler-fsbta-rwopt.o
-	chmod 777 $(OBJDIR)/scheduler-fsbta-rwopt.o
+fsbta-rwopt-act: OUT = usimm-fsbta-rwopt-act
+fsbta-rwopt-act: $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o
+	$(CC) $(CFLAGS) scheduler-fsbta-rwopt-act.c -o $(OBJDIR)/scheduler-fsbta-rwopt-act.o
+	chmod 777 $(OBJDIR)/scheduler-fsbta-rwopt-act.o
 	@echo "Building $(BINDIR)/$(OUT)"
-	$(CC) $(LFLAGS) $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o $(OBJDIR)/scheduler-fsbta-rwopt.o -o $(BINDIR)/$(OUT)
+	$(CC) $(LFLAGS) $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o $(OBJDIR)/scheduler-fsbta-rwopt-act.o -o $(BINDIR)/$(OUT)
 	chmod 777 $(BINDIR)/$(OUT)
 
-all: close fsbta fsbta-rwopt $(BINDIR)/$(OUT)
+fsbta-data: OUT = usimm-fsbta-data
+fsbta-data: $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o
+	$(CC) $(CFLAGS) scheduler-fsbta-data.c -o $(OBJDIR)/scheduler-fsbta-data.o
+	chmod 777 $(OBJDIR)/scheduler-fsbta-data.o
+	@echo "Building $(BINDIR)/$(OUT)"
+	$(CC) $(LFLAGS) $(OBJDIR)/main.o $(OBJDIR)/memory_controller.o $(OBJDIR)/scheduler-fsbta-data.o -o $(BINDIR)/$(OUT)
+	chmod 777 $(BINDIR)/$(OUT)
+
+all: close fsbta fsbta-rwopt-act fsbta-data $(BINDIR)/$(OUT)
 
 
 clean:
