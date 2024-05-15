@@ -74,7 +74,6 @@ void flush_activate_record(int channel, int rank, long long int cycle) {
   }
 }
 
-
 // initialize dram variables and statistics
 void init_memory_controller_vars() {
 

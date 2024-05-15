@@ -96,9 +96,8 @@ typedef struct fs_data {
   int domain_turn;
   int bank_turn;
   int domain_zero_starter;
-  int domain_did_read_or_write;
-  int command_issued;
-  optype_t allowed_op;
+  int deadtime;
+  int next_op;
 } fs_data_t;
 
 fs_data_t channel_fs_data[MAX_NUM_CHANNELS];

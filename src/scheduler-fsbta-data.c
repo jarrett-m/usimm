@@ -6,9 +6,9 @@
 #include "memory_controller.h"
 #include "params.h"
 
-/* 
-    FS-BTA: Fixed Service Bank Triple Alteration
-    WITH Read Write Optimization!!!!
+/* Copied from scheduler-close.c
+    Will be modified to work as Fixed Service: Bank Triple Alteration (FSBTA)
+   scheduler.
 */
 
 extern long long int CYCLE_VAL;
@@ -35,34 +35,98 @@ void init_scheduler_vars() {
     channel_fs_data[i].domain_turn = 0;
     channel_fs_data[i].bank_turn = 0;
     channel_fs_data[i].domain_zero_starter = 0;
-    channel_fs_data[i].domain_did_read_or_write = 0;
-    channel_fs_data[i].allowed_op = READ;
+    channel_fs_data[i].deadtime = 0;
   }
 
-  //set security policy
+  //set security policy and deadtime
   SECURED = 1;
-  DEADTIME = 22;
+  DEADTIME = 15;
 
   return;
 }
 
 void schedule(int channel) {
   request_t *rq_ptr = NULL;
-  
-  //grab data
+
   long long last_req_issue_cycle = channel_fs_data[channel].last_req_issue_cycle;
   int domain_turn = channel_fs_data[channel].domain_turn;
   int bank_turn = channel_fs_data[channel].bank_turn;
   int domain_zero_starter = channel_fs_data[channel].domain_zero_starter;
+  int deadtime = channel_fs_data[channel].deadtime;
+  optype_t next_op = channel_fs_data[channel].next_op;
+
 
   //if it is the deadtime cycle, send a ready act to bank_turn
-  //each domain gets 7 cycles on the the data bus. If a read that is 22 cycles after the act, or a write is 16 cycles after the act
 
+  if (CYCLE_VAL - last_req_issue_cycle >= deadtime){
+    //if bank refreshing 
+    int needs_fake = 1;
+    optype_t last_op = READ;
+    LL_FOREACH(domain_queues[channel][domain_turn], rq_ptr){
+      //if issuable, is an act, matches bank, and is deadtime
+      //must send an act to bank_turn
+      if (rq_ptr->command_issuable && (rq_ptr->next_command == ACT_CMD) && rq_ptr->dram_addr.bank % 3 == bank_turn && rq_ptr->operation_type == next_op){
+        issue_request_command(rq_ptr);
+        last_op = rq_ptr->operation_type;
+        needs_fake = 0;
+        break;
+      }
+    }
+    if (needs_fake == 1){
+      //send fake req to bank_turn
+    }
+    last_req_issue_cycle = CYCLE_VAL;
+    if (domain_turn == DOMAIN_COUNT - 1) {
+        bank_turn = (domain_zero_starter + 2) % 3;
+        domain_zero_starter = (domain_zero_starter + 2) % 3;
+    } else {
+        bank_turn = (bank_turn + 1) % 3;
+    }
+    domain_turn = (domain_turn + 1) % DOMAIN_COUNT;
 
+    //easy way :p
+    //check if next request is read or write
+    next_op = READ; //read as default ig
+    LL_FOREACH(domain_queues[channel][domain_turn], rq_ptr){
+      if (rq_ptr->next_command == ACT_CMD && rq_ptr->dram_addr.bank % 3 == bank_turn){
+        next_op = rq_ptr->operation_type;
+        break;
+      }
+    }
 
+    if (last_op == WRITE){
+      if (next_op == WRITE){
+        deadtime = 7 + 14;
+      }
+      else if (next_op == READ){
+        deadtime = 1 + 14;
+      }
+    }
+    else if (last_op == READ){
+      if (next_op == WRITE){
+        deadtime = 13 + 14;
+      }
+      else if (next_op == READ){
+        deadtime = 7 + 14;
+      }
+    }
 
-    /* If a command hasn't yet been issued to this channel in this cycle, issue a
-   * precharge. */
+  }
+  //continue on man!
+  else {
+    int prev_domain_turn = domain_turn == 0 ? DOMAIN_COUNT - 1 : domain_turn - 1;
+    LL_FOREACH(domain_queues[channel][prev_domain_turn], rq_ptr){
+      if (rq_ptr->command_issuable && rq_ptr->next_command != ACT_CMD){
+        if (rq_ptr->next_command == COL_READ_CMD || rq_ptr->next_command == COL_WRITE_CMD){
+          recent_colacc[channel][rq_ptr->dram_addr.rank]
+                       [rq_ptr->dram_addr.bank] = 1; //note to close it!
+        }
+        issue_request_command(rq_ptr);
+        break;
+      }
+    }
+  }
+
   if (!command_issued_current_cycle[channel]) {
     for (int i = 0; i < NUM_RANKS; i++) {
       for (int j = 0; j < NUM_BANKS; j++) { /* For all banks on the channel.. */
@@ -75,12 +139,13 @@ void schedule(int channel) {
       }
     }
   }
-
   //update the scheduler variables
   channel_fs_data[channel].last_req_issue_cycle = last_req_issue_cycle;
   channel_fs_data[channel].domain_turn = domain_turn;
   channel_fs_data[channel].bank_turn = bank_turn;
   channel_fs_data[channel].domain_zero_starter = domain_zero_starter;
+  channel_fs_data[channel].deadtime = deadtime;
+  channel_fs_data[channel].next_op = next_op;
 }
 
 void scheduler_stats() {

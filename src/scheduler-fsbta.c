@@ -35,7 +35,6 @@ void init_scheduler_vars() {
     channel_fs_data[i].domain_turn = 0;
     channel_fs_data[i].bank_turn = 0;
     channel_fs_data[i].domain_zero_starter = 0;
-    channel_fs_data[i].domain_did_read_or_write = 0;
   }
 
   //set security policy and deadtime
